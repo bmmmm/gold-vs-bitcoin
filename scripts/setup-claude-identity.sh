@@ -32,6 +32,7 @@
 set -euo pipefail
 
 # --- load env (real FORGEJO_HOST lives in ~/.env, chmod 600, never tracked) ---
+# shellcheck source=/dev/null
 [[ -f "$HOME/.env" ]] && { set -a; source "$HOME/.env"; set +a; }
 FORGEJO_HOST="${FORGEJO_HOST:-forgejo.example.com}"
 
