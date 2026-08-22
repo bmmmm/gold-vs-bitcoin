@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What runs out first? — Gold vs. Bitcoin</title>
+<meta name="description" content="Earth's known gold reserves vs. the last bitcoin ever mined — which finish line comes first? A single-page answer with live estimates.">
+<meta property="og:title" content="What runs out first? — Gold vs. Bitcoin">
+<meta property="og:description" content="Known gold reserves are gone by ~2044. The last satoshi arrives ~2140. One page, one verdict.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏳</text></svg>">
+<style>
+  :root {
+    --bg: #faf9f6;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --border: #e3e0d8;
+    --gold: #b8860b;
+    --gold-soft: #f5ead1;
+    --btc: #f7931a;
+    --btc-soft: #fdeeda;
+    --track: #eeebe3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14130f;
+      --card: #1e1c17;
+      --text: #ece9e2;
+      --muted: #9a968c;
+      --border: #34312a;
+      --gold: #e0b23f;
+      --gold-soft: #2c2415;
+      --btc: #f7931a;
+      --btc-soft: #2e2113;
+      --track: #2a2822;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 3rem 1rem 2rem;
+  }
+  main { width: 100%; max-width: 46rem; }
+  h1 {
+    text-align: center;
+    font-size: clamp(1.8rem, 6vw, 2.6rem);
+    margin: 0 0 .3rem;
+    letter-spacing: -.02em;
+  }
+  .sub {
+    text-align: center;
+    color: var(--muted);
+    margin: 0 0 2.2rem;
+  }
+  .duel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+  }
+  @media (max-width: 34rem) { .duel { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--accent);
+    border-radius: 14px;
+    padding: 1.3rem 1.4rem 1.4rem;
+  }
+  .card.gold { --accent: var(--gold); --soft: var(--gold-soft); }
+  .card.btc  { --accent: var(--btc);  --soft: var(--btc-soft); }
+  .card h2 { margin: 0 0 1rem; font-size: 1.25rem; }
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: .82rem;
+    color: var(--muted);
+    margin-bottom: .3rem;
+  }
+  .bar-label strong { color: var(--accent); font-size: .95rem; }
+  .bar {
+    height: .7rem;
+    background: var(--track);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 1.1rem;
+  }
+  .bar .fill {
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 1.2s ease-out;
+  }
+  .counter {
+    background: var(--soft);
+    border-radius: 10px;
+    padding: .7rem .9rem;
+    margin-bottom: 1rem;
+  }
+  .counter .num {
+    font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+    font-size: 1.05rem;
+    font-weight: 600;
+    display: block;
+    font-variant-numeric: tabular-nums;
+  }
+  .counter .what { font-size: .78rem; color: var(--muted); }
+  dl { margin: 0; font-size: .88rem; }
+  dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .28rem 0;
+    border-top: 1px dashed var(--border);
+  }
+  dt { color: var(--muted); }
+  dd { margin: 0; font-weight: 600; text-align: right; }
+  .verdict {
+    margin: 1.6rem 0 0;
+    background: var(--gold-soft);
+    border: 1px solid var(--gold);
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    text-align: center;
+  }
+  .verdict .headline { font-size: 1.3rem; font-weight: 700; margin: 0 0 .3rem; }
+  .verdict p { margin: 0; font-size: .92rem; }
+  .fine {
+    margin-top: 1.4rem;
+    font-size: .78rem;
+    color: var(--muted);
+  }
+  .fine p { margin: .4rem 0; }
+  footer {
+    margin-top: 2.5rem;
+    font-size: .75rem;
+    color: var(--muted);
+    text-align: center;
+  }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>What runs out first?</h1>
+  <p class="sub">Earth's gold reserves vs. the last bitcoin ever mined</p>
+
+  <div class="duel">
+    <section class="card gold">
+      <h2>🥇 Gold</h2>
+      <div class="bar-label"><span>of all known gold, mined</span><strong id="gold-pct">…</strong></div>
+      <div class="bar" role="progressbar" aria-label="share of known gold already mined" aria-valuemin="0" aria-valuemax="100"><div class="fill" id="gold-bar"></div></div>
+      <div class="counter">
+        <span class="num" id="gold-left">…</span>
+        <span class="what">tonnes still in the ground (est., ticking at ~105&nbsp;g/s)</span>
+      </div>
+      <dl>
+        <div><dt>Mining rate</dt><dd>~3,300 t / year</dd></div>
+        <div><dt>Already dug up</dt><dd>~216,000 t</dd></div>
+        <div><dt>Reserves gone by</dt><dd id="gold-end">~2044</dd></div>
+      </dl>
+    </section>
+
+    <section class="card btc">
+      <h2>₿ Bitcoin</h2>
+      <div class="bar-label"><span>of 21,000,000 BTC, mined</span><strong id="btc-pct">…</strong></div>
+      <div class="bar" role="progressbar" aria-label="share of all bitcoin already mined" aria-valuemin="0" aria-valuemax="100"><div class="fill" id="btc-bar"></div></div>
+      <div class="counter">
+        <span class="num" id="btc-mined">…</span>
+        <span class="what">BTC mined so far (est., ~3.125 BTC per block)</span>
+      </div>
+      <dl>
+        <div><dt>Issuance</dt><dd>halves every ~4 years</dd></div>
+        <div><dt>Left to mine</dt><dd id="btc-left">~0.9M BTC</dd></div>
+        <div><dt>Last satoshi</dt><dd id="btc-end">~2140</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <div class="verdict">
+    <p class="headline">🥇 Gold runs out first — by about <span id="gap">a century</span>.</p>
+    <p>Known gold reserves are exhausted around <strong id="v-gold">2044</strong>.
+       The last satoshi won't be mined until <strong id="v-btc">~2140</strong>.</p>
+  </div>
+
+  <div class="fine">
+    <p>* "Runs out" means: known economic reserves ÷ current mine production. That number
+       has hovered near two decades' worth for, well, decades — new deposits keep getting
+       found and reclassified. Bitcoin's finish line, by contrast, is fixed in the protocol.</p>
+    <p>* Bitcoin is already ~95% mined, yet the last 5% takes another century — the block
+       reward halves every 210,000 blocks, so issuance approaches zero asymptotically.</p>
+    <p>Sources:
+       <a href="https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-gold.pdf">USGS Mineral Commodity Summaries 2025 — Gold</a> ·
+       <a href="https://www.gold.org/goldhub/data/how-much-gold">World Gold Council — above-ground stocks</a> ·
+       <a href="https://en.bitcoin.it/wiki/Controlled_supply">Bitcoin Wiki — controlled supply</a>.
+       Counters are client-side estimates from these anchors, not live market data.
+       Not financial advice.</p>
+  </div>
+
+  <footer>
+    <a href="https://github.com/bmmmm/gold-vs-bitcoin">Source on GitHub</a> ·
+    <a href="https://ko-fi.com/bmabma">Support on Ko-fi</a>
+  </footer>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  // --- Anchors (see sources in the footer) ---------------------------------
+  const GOLD = {
+    reservesT: 64000,               // USGS MCS 2025: reserves, year-end 2024
+    minedT: 216265,                 // WGC: all gold ever mined, end-2024
+    ratePerYear: 3300,              // USGS: 2024 world mine production
+    anchor: Date.UTC(2025, 0, 1),   // reserves figure refers to year-end 2024
+  };
+  const YEAR_MS = 365.2425 * 24 * 3600 * 1000;
+
+  const BTC = {
+    epochBlocks: 210000,
+    initialRewardSat: 50n * 100000000n,
+    anchorHeight: 840000,                      // 4th halving block
+    anchorTime: Date.UTC(2024, 3, 20, 0, 9),   // 2024-04-20 00:09 UTC
+    blockMs: 600000,                           // 10-minute target
+  };
+
+  // Exact supply (in satoshis) at a given block height, per the halving rule.
+  function supplySatAt(height) {
+    let sat = 0n;
+    let reward = BTC.initialRewardSat;
+    for (let e = 0; reward > 0n; e++, reward >>= 1n) {
+      const start = e * BTC.epochBlocks;
+      if (height <= start) break;
+      const blocks = Math.min(height - start, BTC.epochBlocks);
+      sat += BigInt(blocks) * reward;
+    }
+    return sat;
+  }
+
+  function heightAt(t) {
+    return BTC.anchorHeight + Math.max(0, (t - BTC.anchorTime) / BTC.blockMs);
+  }
+
+  function rewardSatAt(height) {
+    return BTC.initialRewardSat >> BigInt(Math.floor(height / BTC.epochBlocks));
+  }
+
+  // First block with zero reward → the moment the last satoshi is issued.
+  function lastSatoshiYear() {
+    let e = 0;
+    for (let r = BTC.initialRewardSat; r > 0n; r >>= 1n) e++;
+    const height = e * BTC.epochBlocks;
+    const t = BTC.anchorTime + (height - BTC.anchorHeight) * BTC.blockMs;
+    return new Date(t).getUTCFullYear();
+  }
+
+  function goldLeftAt(t) {
+    return Math.max(0, GOLD.reservesT - GOLD.ratePerYear * (t - GOLD.anchor) / YEAR_MS);
+  }
+
+  function goldEndYear() {
+    return new Date(GOLD.anchor + (GOLD.reservesT / GOLD.ratePerYear) * YEAR_MS).getUTCFullYear();
+  }
+
+  const $ = id => document.getElementById(id);
+  const fmt = (n, digits) =>
+    n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+
+  const CAP_SAT = supplySatAt(Number.MAX_SAFE_INTEGER);
+  const goldEnd = goldEndYear();
+  const btcEnd = lastSatoshiYear();
+
+  $('gold-end').textContent = '~' + goldEnd;
+  $('btc-end').textContent = '~' + btcEnd;
+  $('v-gold').textContent = '~' + goldEnd;
+  $('v-btc').textContent = '~' + btcEnd;
+  $('gap').textContent = 'a century (' + (btcEnd - goldEnd) + ' years)';
+
+  function tick() {
+    const now = Date.now();
+
+    const left = goldLeftAt(now);
+    const goldPct = 100 * GOLD.minedT / (GOLD.minedT + GOLD.reservesT);
+    $('gold-left').textContent = fmt(left, 4);
+    $('gold-pct').textContent = fmt(goldPct, 1) + '%';
+
+    // Interpolate within the current block so the counter visibly ticks
+    // instead of jumping once per ~10 minutes.
+    const h = heightAt(now);
+    const whole = Math.floor(h);
+    const minedSatF = Number(supplySatAt(whole)) + (h - whole) * Number(rewardSatAt(whole));
+    const minedBtc = minedSatF / 1e8;
+    const btcPct = 100 * minedSatF / Number(CAP_SAT);
+    $('btc-mined').textContent = fmt(minedBtc, 4);
+    $('btc-pct').textContent = fmt(btcPct, 1) + '%';
+    $('btc-left').textContent = '~' + fmt((Number(CAP_SAT) - minedSatF) / 1e8 / 1e6, 2) + 'M BTC';
+
+    return { goldPct, btcPct };
+  }
+
+  const { goldPct, btcPct } = tick();
+  // Bars animate from 0 on load; widths are data-driven, not hardcoded.
+  requestAnimationFrame(() => {
+    $('gold-bar').style.width = goldPct + '%';
+    $('btc-bar').style.width = btcPct + '%';
+    $('gold-bar').parentElement.setAttribute('aria-valuenow', goldPct.toFixed(1));
+    $('btc-bar').parentElement.setAttribute('aria-valuenow', btcPct.toFixed(1));
+  });
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setInterval(tick, reduced ? 5000 : 100);
+})();
+</script>
+</body>
+</html>

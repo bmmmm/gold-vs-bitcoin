@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bmmmm.github.io/gold-vs-bitcoin/sitemap.xml
