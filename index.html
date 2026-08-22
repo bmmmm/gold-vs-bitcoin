@@ -6,7 +6,12 @@
 <title>What runs out first? — Gold vs. Bitcoin</title>
 <meta name="description" content="Earth's known gold reserves vs. the last bitcoin ever mined — which finish line comes first? A single-page answer with live estimates.">
 <meta property="og:title" content="What runs out first? — Gold vs. Bitcoin">
-<meta property="og:description" content="Known gold reserves are gone by ~2044. The last satoshi arrives ~2140. One page, one verdict.">
+<meta property="og:description" content="Known gold reserves are gone by ~2046. The last satoshi arrives ~2140. One page, one verdict.">
+<meta property="og:url" content="https://bmmmm.github.io/gold-vs-bitcoin/">
+<meta property="og:image" content="https://bmmmm.github.io/gold-vs-bitcoin/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏳</text></svg>">
 <style>
   :root {
@@ -18,6 +23,7 @@
     --gold: #b8860b;
     --gold-soft: #f5ead1;
     --btc: #f7931a;
+    --btc-line: #c26a00;   /* darkened for >=3:1 line contrast on light */
     --btc-soft: #fdeeda;
     --track: #eeebe3;
   }
@@ -31,6 +37,7 @@
       --gold: #e0b23f;
       --gold-soft: #2c2415;
       --btc: #f7931a;
+      --btc-line: #f7931a;
       --btc-soft: #2e2113;
       --track: #2a2822;
     }
@@ -132,6 +139,70 @@
   }
   .verdict .headline { font-size: 1.3rem; font-weight: 700; margin: 0 0 .3rem; }
   .verdict p { margin: 0; font-size: .92rem; }
+  .panel {
+    margin-top: 1.6rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem 1.4rem 1.4rem;
+  }
+  .panel h3 { margin: 0 0 .4rem; font-size: 1.05rem; }
+  .panel .lede { margin: 0 0 1rem; font-size: .86rem; color: var(--muted); }
+  .charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+  }
+  @media (max-width: 34rem) { .charts { grid-template-columns: 1fr; } }
+  figure.chart { margin: 0; position: relative; }
+  figure.chart figcaption {
+    font-size: .8rem;
+    font-weight: 600;
+    margin-bottom: .3rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  figure.chart figcaption .swatch {
+    width: 12px; height: 3px; border-radius: 2px; display: inline-block;
+  }
+  figure.chart svg { width: 100%; height: auto; display: block; }
+  .chart .axis { font-size: 9px; fill: var(--muted); }
+  .chart .grid { stroke: var(--border); stroke-width: 1; }
+  .chart .note { font-size: 9px; font-weight: 600; fill: var(--muted); }
+  .tip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .2rem .5rem;
+    font-size: .72rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    display: none;
+    transform: translate(-50%, -130%);
+  }
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    font-size: .86rem;
+  }
+  @media (max-width: 34rem) { .split { grid-template-columns: 1fr; } }
+  .split h4 { margin: 0 0 .3rem; font-size: .92rem; }
+  .split p { margin: 0 0 .5rem; }
+  .punchline {
+    margin: 1rem 0 0;
+    padding-top: .8rem;
+    border-top: 1px dashed var(--border);
+    font-size: .95rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .cube-wrap svg { width: 100%; height: auto; display: block; max-width: 34rem; margin: 0 auto; }
+  .cube-label { font-size: 10px; fill: var(--muted); }
   .fine {
     margin-top: 1.4rem;
     font-size: .78rem;
@@ -163,8 +234,8 @@
       </div>
       <dl>
         <div><dt>Mining rate</dt><dd>~3,300 t / year</dd></div>
-        <div><dt>Already dug up</dt><dd>~216,000 t</dd></div>
-        <div><dt>Reserves gone by</dt><dd id="gold-end">~2044</dd></div>
+        <div><dt>Already dug up</dt><dd>~219,500 t</dd></div>
+        <div><dt>Reserves gone by</dt><dd id="gold-end">~2046</dd></div>
       </dl>
     </section>
 
@@ -178,6 +249,7 @@
       </div>
       <dl>
         <div><dt>Issuance</dt><dd>halves every ~4 years</dd></div>
+        <div><dt>Next halving</dt><dd id="btc-halving">…</dd></div>
         <div><dt>Left to mine</dt><dd id="btc-left">~0.9M BTC</dd></div>
         <div><dt>Last satoshi</dt><dd id="btc-end">~2140</dd></div>
       </dl>
@@ -186,20 +258,90 @@
 
   <div class="verdict">
     <p class="headline">🥇 Gold runs out first — by about <span id="gap">a century</span>.</p>
-    <p>Known gold reserves are exhausted around <strong id="v-gold">2044</strong>.
+    <p>Known gold reserves are exhausted around <strong id="v-gold">2046</strong>.
        The last satoshi won't be mined until <strong id="v-btc">~2140</strong>.</p>
   </div>
 
+  <section class="panel">
+    <h3>Why the last 5% takes a century</h3>
+    <p class="lede">Gold leaves the ground at a steady pace — a straight line to zero.
+       Bitcoin's issuance halves every ~4 years, so what's left shrinks in a staircase
+       that never quite reaches the floor.</p>
+    <div class="charts">
+      <figure class="chart" id="chart-gold">
+        <figcaption><span class="swatch" style="background:var(--gold)"></span>Gold — reserves left, tonnes</figcaption>
+        <svg viewBox="0 0 300 170" role="img" aria-label="Line chart: gold reserves fall linearly from 66,000 tonnes in 2026 to zero around 2046"></svg>
+        <div class="tip"></div>
+      </figure>
+      <figure class="chart" id="chart-btc">
+        <figcaption><span class="swatch" style="background:var(--btc-line)"></span>Bitcoin — left to mine, BTC</figcaption>
+        <svg viewBox="0 0 300 170" role="img" aria-label="Line chart: bitcoin left to mine decays in halving steps from about 940,000 in 2026 to zero around 2140"></svg>
+        <div class="tip"></div>
+      </figure>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>Plot twist: gold never dies — bitcoin does</h3>
+    <div class="split">
+      <div>
+        <h4>🥇 Nothing is ever lost</h4>
+        <p>Gold doesn't get used up — it gets melted down and comes back.
+           Roughly <strong>1,400 t per year</strong> re-enters supply through recycling,
+           about a quarter of everything sold.</p>
+        <p>Virtually <strong>all ~219,500 t ever mined still exist</strong> above ground —
+           in vaults, jewelry, and circuit boards.</p>
+      </div>
+      <div>
+        <h4>₿ Only losses are forever</h4>
+        <p>Bitcoin can't be melted back. An estimated <strong>3–4 million BTC</strong>
+           are lost for good — discarded drives, forgotten keys, and Satoshi's
+           untouched ~1M coins.</p>
+        <p>The <em>effective</em> cap is likely <strong>below 18 million</strong> —
+           and it only ever shrinks.</p>
+      </div>
+    </div>
+    <p class="punchline">The last gram of gold will never be gone.
+       Millions of bitcoin already are.</p>
+  </section>
+
+  <section class="panel cube-wrap">
+    <h3>All of it, in one cube</h3>
+    <p class="lede">Gold is so dense (19.3 t/m³) that everything humanity has ever mined
+       fits in a cube about 22.5&nbsp;m on a side — it would hide behind an apartment block.
+       The remaining reserves add a 15&nbsp;m cube.</p>
+    <svg viewBox="0 0 560 290" role="img" aria-label="Two isometric cubes drawn to scale: all gold ever mined is a 22.5 metre cube, known reserves a 15 metre cube, next to a 1.8 metre human figure">
+      <!-- cube 1: all gold ever mined, side 22.5 m -->
+      <path d="M140,140 L235.3,85 L140,30 L44.7,85 Z"    fill="var(--gold)" opacity=".95"/>
+      <path d="M140,250 L44.7,195 L44.7,85 L140,140 Z"   fill="var(--gold)" opacity=".55"/>
+      <path d="M140,250 L235.3,195 L235.3,85 L140,140 Z" fill="var(--gold)" opacity=".75"/>
+      <text class="cube-label" x="140" y="272" text-anchor="middle">everything ever mined — ~22.5 m</text>
+      <!-- cube 2: known reserves, side 15 m -->
+      <path d="M330,176.3 L393.8,139.4 L330,102.6 L266.2,139.4 Z" fill="var(--gold)" opacity=".95"/>
+      <path d="M330,250 L266.2,213.2 L266.2,139.4 L330,176.3 Z"   fill="var(--gold)" opacity=".55"/>
+      <path d="M330,250 L393.8,213.2 L393.8,139.4 L330,176.3 Z"   fill="var(--gold)" opacity=".75"/>
+      <text class="cube-label" x="330" y="272" text-anchor="middle">known reserves — ~15 m</text>
+      <!-- human, 1.8 m -->
+      <line x1="440" y1="250" x2="440" y2="243.5" stroke="var(--muted)" stroke-width="1.6"/>
+      <circle cx="440" cy="241.8" r="1.7" fill="var(--muted)"/>
+      <line x1="447" y1="232" x2="441.5" y2="240" stroke="var(--muted)" stroke-width=".7"/>
+      <text class="cube-label" x="450" y="230">you — 1.8 m</text>
+    </svg>
+  </section>
+
   <div class="fine">
     <p>* "Runs out" means: known economic reserves ÷ current mine production. That number
-       has hovered near two decades' worth for, well, decades — new deposits keep getting
-       found and reclassified. Bitcoin's finish line, by contrast, is fixed in the protocol.</p>
+       is a moving target — between the 2025 and 2026 USGS editions, world reserves went
+       <em>up</em> from 64,000 to 66,000 t even as ~3,300 t were mined, because new deposits
+       keep being found and reclassified. Bitcoin's finish line, by contrast, is fixed in
+       the protocol.</p>
     <p>* Bitcoin is already ~95% mined, yet the last 5% takes another century — the block
        reward halves every 210,000 blocks, so issuance approaches zero asymptotically.</p>
     <p>Sources:
-       <a href="https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-gold.pdf">USGS Mineral Commodity Summaries 2025 — Gold</a> ·
+       <a href="https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-gold.pdf">USGS Mineral Commodity Summaries 2026 — Gold</a> ·
        <a href="https://www.gold.org/goldhub/data/how-much-gold">World Gold Council — above-ground stocks</a> ·
-       <a href="https://en.bitcoin.it/wiki/Controlled_supply">Bitcoin Wiki — controlled supply</a>.
+       <a href="https://en.bitcoin.it/wiki/Controlled_supply">Bitcoin Wiki — controlled supply</a> ·
+       <a href="https://river.com/learn/how-many-bitcoins-are-lost/">River — how many bitcoins are lost</a>.
        Counters are client-side estimates from these anchors, not live market data.
        Not financial advice.</p>
   </div>
@@ -216,10 +358,10 @@
 
   // --- Anchors (see sources in the footer) ---------------------------------
   const GOLD = {
-    reservesT: 64000,               // USGS MCS 2025: reserves, year-end 2024
-    minedT: 216265,                 // WGC: all gold ever mined, end-2024
-    ratePerYear: 3300,              // USGS: 2024 world mine production
-    anchor: Date.UTC(2025, 0, 1),   // reserves figure refers to year-end 2024
+    reservesT: 66000,               // USGS MCS 2026: reserves, year-end 2025
+    minedT: 219500,                 // WGC end-2024 stock (216,265 t) + 2025 production
+    ratePerYear: 3300,              // USGS: 2025 world mine production
+    anchor: Date.UTC(2026, 0, 1),   // reserves figure refers to year-end 2025
   };
   const YEAR_MS = 365.2425 * 24 * 3600 * 1000;
 
@@ -248,34 +390,51 @@
     return BTC.anchorHeight + Math.max(0, (t - BTC.anchorTime) / BTC.blockMs);
   }
 
+  function timeAtHeight(h) {
+    return BTC.anchorTime + (h - BTC.anchorHeight) * BTC.blockMs;
+  }
+
   function rewardSatAt(height) {
     return BTC.initialRewardSat >> BigInt(Math.floor(height / BTC.epochBlocks));
   }
 
+  // Fractional-height supply so counters tick instead of jumping per block.
+  function minedSatAt(t) {
+    const h = heightAt(t);
+    const whole = Math.floor(h);
+    return Number(supplySatAt(whole)) + (h - whole) * Number(rewardSatAt(whole));
+  }
+
   // First block with zero reward → the moment the last satoshi is issued.
-  function lastSatoshiYear() {
+  function halvingCount() {
     let e = 0;
     for (let r = BTC.initialRewardSat; r > 0n; r >>= 1n) e++;
-    const height = e * BTC.epochBlocks;
-    const t = BTC.anchorTime + (height - BTC.anchorHeight) * BTC.blockMs;
-    return new Date(t).getUTCFullYear();
+    return e;
   }
 
   function goldLeftAt(t) {
     return Math.max(0, GOLD.reservesT - GOLD.ratePerYear * (t - GOLD.anchor) / YEAR_MS);
   }
 
-  function goldEndYear() {
-    return new Date(GOLD.anchor + (GOLD.reservesT / GOLD.ratePerYear) * YEAR_MS).getUTCFullYear();
-  }
-
   const $ = id => document.getElementById(id);
   const fmt = (n, digits) =>
     n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
-  const CAP_SAT = supplySatAt(Number.MAX_SAFE_INTEGER);
-  const goldEnd = goldEndYear();
-  const btcEnd = lastSatoshiYear();
+  const CAP_SAT = Number(supplySatAt(Number.MAX_SAFE_INTEGER));
+  const NOW = Date.now();
+  const goldEndMs = GOLD.anchor + (GOLD.reservesT / GOLD.ratePerYear) * YEAR_MS;
+  // Round to the nearest year: 2026 + 20.0 years is "~2046", not New Year's Eve 2045.
+  const goldEnd = new Date(GOLD.anchor).getUTCFullYear() + Math.round(GOLD.reservesT / GOLD.ratePerYear);
+  const btcEndMs = timeAtHeight(halvingCount() * BTC.epochBlocks);
+  const btcEnd = new Date(btcEndMs).getUTCFullYear();
+
+  const nextEpoch = Math.floor(heightAt(NOW) / BTC.epochBlocks) + 1;
+  const nextHalvingMs = timeAtHeight(nextEpoch * BTC.epochBlocks);
+  const nextReward = Number(BTC.initialRewardSat >> BigInt(nextEpoch)) / 1e8;
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const nh = new Date(nextHalvingMs);
+  $('btc-halving').textContent =
+    '~' + MONTHS[nh.getUTCMonth()] + ' ' + nh.getUTCFullYear() + ' → ' + nextReward + ' BTC';
 
   $('gold-end').textContent = '~' + goldEnd;
   $('btc-end').textContent = '~' + btcEnd;
@@ -291,16 +450,12 @@
     $('gold-left').textContent = fmt(left, 4);
     $('gold-pct').textContent = fmt(goldPct, 1) + '%';
 
-    // Interpolate within the current block so the counter visibly ticks
-    // instead of jumping once per ~10 minutes.
-    const h = heightAt(now);
-    const whole = Math.floor(h);
-    const minedSatF = Number(supplySatAt(whole)) + (h - whole) * Number(rewardSatAt(whole));
+    const minedSatF = minedSatAt(now);
     const minedBtc = minedSatF / 1e8;
-    const btcPct = 100 * minedSatF / Number(CAP_SAT);
+    const btcPct = 100 * minedSatF / CAP_SAT;
     $('btc-mined').textContent = fmt(minedBtc, 4);
     $('btc-pct').textContent = fmt(btcPct, 1) + '%';
-    $('btc-left').textContent = '~' + fmt((Number(CAP_SAT) - minedSatF) / 1e8 / 1e6, 2) + 'M BTC';
+    $('btc-left').textContent = '~' + fmt((CAP_SAT - minedSatF) / 1e8 / 1e6, 2) + 'M BTC';
 
     return { goldPct, btcPct };
   }
@@ -316,6 +471,84 @@
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   setInterval(tick, reduced ? 5000 : 100);
+
+  // --- Small-multiple charts: what's left, from 2026 to 2150 ----------------
+  // Two panels (one series each) instead of one dual-unit axis: tonnes and BTC
+  // don't share a scale, and the shapes — straight line vs halving staircase —
+  // are the story.
+  const X0 = 2026, X1 = 2152;
+  const PLOT = { left: 10, right: 292, top: 16, bottom: 140 };
+  const yearToMs = y => Date.UTC(y, 0, 1);
+  const msToYear = t => 2026 + (t - yearToMs(2026)) / YEAR_MS;
+  const px = y => PLOT.left + (y - X0) / (X1 - X0) * (PLOT.right - PLOT.left);
+  const py = frac => PLOT.bottom - frac * (PLOT.bottom - PLOT.top);
+
+  function drawChart(fig, opts) {
+    const svg = fig.querySelector('svg');
+    const pts = opts.points.map(([yr, v]) => px(yr).toFixed(1) + ',' + py(v / opts.max).toFixed(1));
+    const ticks = [2026, 2050, 2100, 2150];
+    svg.innerHTML =
+      '<line class="grid" x1="' + PLOT.left + '" y1="' + PLOT.bottom + '" x2="' + PLOT.right + '" y2="' + PLOT.bottom + '"/>' +
+      '<line class="grid" stroke-dasharray="2 3" x1="' + PLOT.left + '" y1="' + py(0.5) + '" x2="' + PLOT.right + '" y2="' + py(0.5) + '"/>' +
+      ticks.map(t =>
+        '<text class="axis" x="' + px(t) + '" y="152" text-anchor="middle">' + t + '</text>').join('') +
+      '<text class="axis" x="' + PLOT.left + '" y="10">' + opts.maxLabel + '</text>' +
+      '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + opts.color +
+        '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<circle cx="' + px(opts.endYear) + '" cy="' + PLOT.bottom + '" r="3" fill="' + opts.color + '"/>' +
+      '<text class="note" x="' + (px(opts.endYear) + opts.endDx) + '" y="132" text-anchor="' + opts.endAnchor + '">' +
+        opts.endLabel + '</text>' +
+      '<line class="hover-line" x1="0" y1="' + PLOT.top + '" x2="0" y2="' + PLOT.bottom +
+        '" stroke="' + opts.color + '" stroke-width="1" opacity="0" stroke-dasharray="3 2"/>';
+
+    // Hover: crosshair + tooltip with year and value.
+    const tip = fig.querySelector('.tip');
+    const hover = svg.querySelector('.hover-line');
+    svg.addEventListener('pointermove', ev => {
+      const box = svg.getBoundingClientRect();
+      const fx = (ev.clientX - box.left) / box.width * 300;
+      if (fx < PLOT.left || fx > PLOT.right) { tip.style.display = 'none'; hover.setAttribute('opacity', 0); return; }
+      const yr = X0 + (fx - PLOT.left) / (PLOT.right - PLOT.left) * (X1 - X0);
+      hover.setAttribute('x1', fx); hover.setAttribute('x2', fx);
+      hover.setAttribute('opacity', .6);
+      tip.textContent = Math.floor(yr) + ' · ' + opts.fmtValue(yr);
+      tip.style.left = (ev.clientX - box.left) + 'px';
+      tip.style.top = (svg.offsetTop + py(0.5) / 170 * box.height) + 'px';
+      tip.style.display = 'block';
+    });
+    svg.addEventListener('pointerleave', () => {
+      tip.style.display = 'none'; hover.setAttribute('opacity', 0);
+    });
+  }
+
+  const yrMs = yr => yearToMs(2026) + (yr - 2026) * YEAR_MS;
+
+  // Gold: straight line, zero at depletion, flat after.
+  drawChart($('chart-gold'), {
+    points: [[2026, GOLD.reservesT], [msToYear(goldEndMs), 0], [X1 - 2, 0]],
+    max: GOLD.reservesT,
+    maxLabel: '66,000 t',
+    color: getComputedStyle(document.documentElement).getPropertyValue('--gold').trim(),
+    endYear: msToYear(goldEndMs), endLabel: 'gone ~' + goldEnd, endDx: 6, endAnchor: 'start',
+    fmtValue: yr => fmt(goldLeftAt(yrMs(yr)), 0) + ' t left',
+  });
+
+  // Bitcoin: kinks at every halving (issuance is linear within an epoch).
+  const btcLeft0 = CAP_SAT - minedSatAt(yrMs(2026));
+  const btcPoints = [[2026, btcLeft0 / 1e8]];
+  for (let e = nextEpoch; e <= halvingCount(); e++) {
+    const t = timeAtHeight(e * BTC.epochBlocks);
+    btcPoints.push([msToYear(t), (CAP_SAT - Number(supplySatAt(e * BTC.epochBlocks))) / 1e8]);
+  }
+  btcPoints.push([X1 - 2, 0]);
+  drawChart($('chart-btc'), {
+    points: btcPoints,
+    max: btcLeft0 / 1e8,
+    maxLabel: '~' + fmt(btcLeft0 / 1e8 / 1000, 0) + 'k BTC',
+    color: getComputedStyle(document.documentElement).getPropertyValue('--btc-line').trim(),
+    endYear: btcEnd, endLabel: 'last satoshi ~' + btcEnd, endDx: -6, endAnchor: 'end',
+    fmtValue: yr => fmt(Math.max(0, CAP_SAT - minedSatAt(yrMs(yr))) / 1e8, 0) + ' BTC left',
+  });
 })();
 </script>
 </body>
