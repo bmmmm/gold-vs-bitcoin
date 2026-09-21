@@ -249,6 +249,7 @@
       </div>
       <dl>
         <div><dt>Issuance</dt><dd>halves every ~4 years</dd></div>
+        <div><dt>Next block (est.)</dt><dd id="btc-next-block">…</dd></div>
         <div><dt>Next halving</dt><dd id="btc-halving">…</dd></div>
         <div><dt>Already mined</dt><dd id="btc-mined">~19.9M BTC</dd></div>
         <div><dt>Last satoshi</dt><dd id="btc-end">~2140</dd></div>
@@ -419,6 +420,10 @@
   const $ = id => document.getElementById(id);
   const fmt = (n, digits) =>
     n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  const fmtCountdown = ms => {
+    const s = Math.max(0, Math.round(ms / 1000));
+    return '~' + Math.floor(s / 60) + 'm ' + String(s % 60).padStart(2, '0') + 's';
+  };
 
   const CAP_SAT = Number(supplySatAt(Number.MAX_SAFE_INTEGER));
   const NOW = Date.now();
@@ -455,9 +460,12 @@
     const minedBtc = minedSatF / 1e8;
     const leftBtc = (CAP_SAT - minedSatF) / 1e8;
     const btcPct = 100 * minedSatF / CAP_SAT;
-    $('btc-left').textContent = fmt(leftBtc, 4);
+    // 2 decimals, not 4: at 3.125 BTC/block a finer step ticks ~50x/s,
+    // far faster than gold's ~1 digit/s — this matches that pace instead.
+    $('btc-left').textContent = fmt(leftBtc, 2);
     $('btc-pct').textContent = fmt(btcPct, 1) + '%';
     $('btc-mined').textContent = '~' + fmt(minedBtc / 1e6, 2) + 'M BTC';
+    $('btc-next-block').textContent = fmtCountdown(timeAtHeight(Math.ceil(heightAt(now))) - now);
 
     return { goldPct, btcPct };
   }
