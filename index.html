@@ -6,7 +6,7 @@
 <title>What runs out first? — Gold vs. Bitcoin</title>
 <meta name="description" content="Earth's known gold reserves vs. the last bitcoin ever mined — which finish line comes first? A single-page answer with live estimates.">
 <meta property="og:title" content="What runs out first? — Gold vs. Bitcoin">
-<meta property="og:description" content="Known gold reserves are gone by ~2046. The last satoshi arrives ~2140. One page, one verdict.">
+<meta property="og:description" content="Known gold reserves are gone by ~2046. The last satoshi arrives ~2139. One page, one verdict.">
 <meta property="og:url" content="https://bmmmm.github.io/gold-vs-bitcoin/">
 <meta property="og:image" content="https://bmmmm.github.io/gold-vs-bitcoin/og.png">
 <meta property="og:image:width" content="1200">
@@ -345,6 +345,9 @@
        <a href="https://river.com/learn/how-many-bitcoins-are-lost/">River — how many bitcoins are lost</a>.
        Counters are client-side estimates from these anchors, not live market data.
        Not financial advice.</p>
+    <p id="btc-sync-note">Bitcoin's assumed block pace is resynced weekly against the live chain, no
+       human in the loop — <span id="btc-sync-detail">…</span>. Full history:
+       <a href="https://github.com/bmmmm/gold-vs-bitcoin/blob/main/btc-blockms-log.csv">btc-blockms-log.csv</a>.</p>
   </div>
 
   <footer>
@@ -370,8 +373,9 @@
     epochBlocks: 210000,
     initialRewardSat: 50n * 100000000n,
     anchorHeight: 840000,                      // 4th halving block
-    anchorTime: Date.UTC(2024, 3, 20, 0, 9),   // 2024-04-20 00:09 UTC
-    blockMs: 600000,                           // 10-minute target
+    anchorTime: Date.UTC(2024, 3, 20, 0, 9, 27), // 2024-04-20 00:09:27 UTC — exact, matches sync script's anchor_ts
+    blockMs: 597083,                           // empirical avg since anchor, synced weekly (scripts/sync-btc-blockms.sh)
+    syncedAt: Date.UTC(2026, 8, 21),           // last time the above was checked against the live chain
   };
 
   // Exact supply (in satoshis) at a given block height, per the halving rule.
@@ -440,6 +444,14 @@
   const nh = new Date(nextHalvingMs);
   $('btc-halving').textContent =
     '~' + MONTHS[nh.getUTCMonth()] + ' ' + nh.getUTCFullYear() + ' → ' + nextReward + ' BTC';
+
+  const syncedAt = new Date(BTC.syncedAt);
+  const syncAgeDays = (Date.now() - BTC.syncedAt) / 86400000;
+  const blockMsDrift = 100 * (BTC.blockMs - 600000) / 600000;
+  $('btc-sync-detail').textContent =
+    (syncAgeDays > 30 ? '⚠ sync overdue, ' : '') +
+    'last checked ' + MONTHS[syncedAt.getUTCMonth()] + ' ' + syncedAt.getUTCDate() + ', ' + syncedAt.getUTCFullYear() +
+    ': ' + fmt(BTC.blockMs, 0) + ' ms/block avg (' + (blockMsDrift >= 0 ? '+' : '') + fmt(blockMsDrift, 2) + '% vs. the 10-min target)';
 
   $('gold-end').textContent = '~' + goldEnd;
   $('btc-end').textContent = '~' + btcEnd;
@@ -559,6 +571,11 @@
     endYear: btcEnd, endLabel: 'last satoshi ~' + btcEnd, endDx: -6, endAnchor: 'end',
     fmtValue: yr => fmt(Math.max(0, CAP_SAT - minedSatAt(yrMs(yr))) / 1e8, 0) + ' BTC left',
   });
+  // Static in the HTML source, wrong the moment btc-anchor-sync moves btcEnd
+  // across a year boundary — keep it live instead of baking a year into markup.
+  $('chart-btc').querySelector('svg').setAttribute('aria-label',
+    'Line chart: bitcoin left to mine decays in halving steps from about ' +
+    fmt(Math.round(btcLeft0 / 1e8 / 1000) * 1000, 0) + ' in 2026 to zero around ' + btcEnd);
 })();
 </script>
 </body>

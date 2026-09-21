@@ -10,7 +10,10 @@ One static page, one verdict, live counters:
 🥇 **Gold — by about a century.** Known economic reserves (~66,000 t per USGS)
 are exhausted around **~2046** at current mining rates (~3,300 t/year), while
 Bitcoin's issuance halves every ~4 years and the **last satoshi** isn't mined
-until **~2140**.
+until **~2139** (the page computes this live, off the block pace in
+`btc-blockms-log.csv` — this number and the `og:description` above are a
+manual snapshot and can lag a year behind if `btc-anchor-sync` nudges the
+projection across a year boundary).
 
 The asterisks make it fun:
 
@@ -27,12 +30,40 @@ The asterisks make it fun:
 
 ## How it works
 
-A single `index.html` — no build step, no dependencies, no network calls.
-The counters and charts are client-side estimates derived from published
-anchors (USGS reserves + production, the 2024 halving block), not live market
-data. The Bitcoin side maintains itself (it's all protocol math); the gold
-anchors get refreshed once a year when the USGS publishes new figures
-(each February).
+A single `index.html` — no build step, no dependencies, no network calls in
+the browser. The counters and charts are client-side estimates derived from
+published anchors (USGS reserves + production, the 2024 halving block), not
+live market data.
+
+The Bitcoin side is mostly protocol math, but `BTC.blockMs` (the assumed
+average ms per block, everything else — left-to-mine, next halving, next
+block, last satoshi — is extrapolated from it) drifts slowly from the
+10-minute target as network hashrate moves. A weekly GitHub Action
+(`.github/workflows/btc-anchor-sync.yml`, script:
+`scripts/sync-btc-blockms.sh`) fetches the current chain tip, recomputes the
+empirical average since the block-840000 anchor, and — fully autonomously,
+no approval step — pushes the correction straight to `index.html` when it
+has moved by at least 300ms (below that it's weekly noise, not signal; two
+sanity bands, absolute and delta-relative, refuse anything that looks like a
+bad API response rather than real drift), then triggers a Pages redeploy
+directly (a `GITHUB_TOKEN` push doesn't fire `pages.yml` on its own). Every
+run, changed or not, is logged to `btc-blockms-log.csv`, and the page itself
+shows the current drift and last-checked date in the fine print at the
+bottom — flagged if a sync is overdue. The halving anchor itself (block
+840000) is never touched by the script; that's a manual re-anchor once the
+5th halving lands (~2028).
+
+Note: this Action only ever pushes to the `github` remote — the Forgejo
+`origin` mirror will drift behind on weeks it corrects `index.html`, same as
+any other GitHub-only commit, until someone re-syncs it by hand. Because
+`btc-blockms-log.csv` is append-only on both sides once that happens, the
+next `git pull` from `origin` will conflict on that file every time — not a
+sign anything is wrong, just take GitHub's version (`git checkout --theirs`)
+or merge the rows by hand.
+
+The gold anchors get refreshed once a year by hand, when the USGS publishes
+new figures (each February) — there's no live feed for reserves to sync
+against.
 
 ## Sources
 

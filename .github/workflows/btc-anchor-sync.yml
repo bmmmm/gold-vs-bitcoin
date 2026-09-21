@@ -1,0 +1,72 @@
+# Recalibrates BTC.blockMs (the assumed avg ms/block every Bitcoin
+# projection on the page is extrapolated from) against the live chain tip.
+# See scripts/sync-btc-blockms.sh and README § How it works for the why.
+#
+# Fully autonomous: both the log line and, when the chain has drifted enough
+# to matter, the index.html correction are pushed straight to main. No PR,
+# nothing to approve — the script's own sanity/delta bands (see its header)
+# are the only gate.
+#
+# A push here uses GITHUB_TOKEN, which per GitHub's own docs does NOT
+# trigger other `on: push` workflows (loop-prevention) — so pages.yml would
+# never redeploy and the live site would silently keep serving stale numbers
+# forever. The explicit `gh workflow run pages.yml` step below is the fix,
+# not decoration.
+#
+# Side effect of the same loop-prevention rule: security.yml (push-triggered
+# gitleaks/forbidden-file/token scan) also does NOT re-run on these commits,
+# and it has no workflow_dispatch trigger to invoke by hand the way pages.yml
+# does — so these weekly bot commits aren't covered by it. Accepted for now:
+# the bot only ever rewrites two integers in index.html and appends a CSV
+# row, nothing it touches can introduce a secret. Revisit if that changes.
+name: btc-anchor-sync
+
+on:
+  schedule:
+    - cron: '17 3 * * 1'  # weekly, Monday 03:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: btc-anchor-sync
+
+permissions:
+  contents: write
+  actions: write  # to trigger the redeploy/rescan below
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Recalibrate blockMs from the live chain tip
+        id: sync
+        run: scripts/sync-btc-blockms.sh
+
+      - name: Commit and push
+        id: commit
+        env:
+          NEW_MS: ${{ steps.sync.outputs.new_ms }}
+          OLD_MS: ${{ steps.sync.outputs.old_ms }}
+          DELTA_PCT: ${{ steps.sync.outputs.delta_pct }}
+          CHANGED: ${{ steps.sync.outputs.changed }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add btc-blockms-log.csv index.html
+          # The script always appends a log row and stamps syncedAt on any
+          # successful run, so there is always something staged here — this
+          # is not a "did anything change" check, just the standard "don't
+          # commit an empty tree" guard.
+          if [ "$CHANGED" = "true" ]; then
+            git commit -m "fix: recalibrate BTC.blockMs to ${NEW_MS}ms (was ${OLD_MS}ms, delta ${DELTA_PCT}%)"
+          else
+            git commit -m "chore: log btc-blockms sync (no change, delta ${DELTA_PCT}%)"
+          fi
+          git push
+
+      - name: Redeploy pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
