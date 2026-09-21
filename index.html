@@ -244,13 +244,13 @@
       <div class="bar-label"><span>of 21,000,000 BTC, mined</span><strong id="btc-pct">…</strong></div>
       <div class="bar" role="progressbar" aria-label="share of all bitcoin already mined" aria-valuemin="0" aria-valuemax="100"><div class="fill" id="btc-bar"></div></div>
       <div class="counter">
-        <span class="num" id="btc-mined">…</span>
-        <span class="what">BTC mined so far (est., ~3.125 BTC per block)</span>
+        <span class="num" id="btc-left">…</span>
+        <span class="what">BTC still left to mine (est., ~3.125 BTC per block)</span>
       </div>
       <dl>
         <div><dt>Issuance</dt><dd>halves every ~4 years</dd></div>
         <div><dt>Next halving</dt><dd id="btc-halving">…</dd></div>
-        <div><dt>Left to mine</dt><dd id="btc-left">~0.9M BTC</dd></div>
+        <div><dt>Already mined</dt><dd id="btc-mined">~19.9M BTC</dd></div>
         <div><dt>Last satoshi</dt><dd id="btc-end">~2140</dd></div>
       </dl>
     </section>
@@ -446,16 +446,18 @@
     const now = Date.now();
 
     const left = goldLeftAt(now);
-    const goldPct = 100 * GOLD.minedT / (GOLD.minedT + GOLD.reservesT);
+    const goldTotal = GOLD.minedT + GOLD.reservesT;
+    const goldPct = 100 * (goldTotal - left) / goldTotal;
     $('gold-left').textContent = fmt(left, 4);
     $('gold-pct').textContent = fmt(goldPct, 1) + '%';
 
     const minedSatF = minedSatAt(now);
     const minedBtc = minedSatF / 1e8;
+    const leftBtc = (CAP_SAT - minedSatF) / 1e8;
     const btcPct = 100 * minedSatF / CAP_SAT;
-    $('btc-mined').textContent = fmt(minedBtc, 4);
+    $('btc-left').textContent = fmt(leftBtc, 4);
     $('btc-pct').textContent = fmt(btcPct, 1) + '%';
-    $('btc-left').textContent = '~' + fmt((CAP_SAT - minedSatF) / 1e8 / 1e6, 2) + 'M BTC';
+    $('btc-mined').textContent = '~' + fmt(minedBtc / 1e6, 2) + 'M BTC';
 
     return { goldPct, btcPct };
   }
