@@ -8,24 +8,39 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/upload-pages-artifact@v5
         with:
           path: .
+
+  deploy:
+    # Upload and deploy used to share one job, and deploy-pages looked the
+    # artifact up a fraction of a second after it was finalized. The listing it
+    # uses can lag behind finalize: the run for c483178 on 2026-11-23 got
+    # "Found 0 artifact(s)" 0.3 s after the upload reported success
+    # (actions/deploy-pages#451; deploy-pages does not retry an empty listing).
+    # A separate job starts its lookup seconds later — the layout GitHub's own
+    # Pages starters use. How long the listing can lag is not documented, so
+    # this is not a measured guarantee.
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v5
